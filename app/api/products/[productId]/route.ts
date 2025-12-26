@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// 1. GET - Fetch a single product to pre-fill the edit form
+// 1. GET
 export async function GET(
   req: Request,
-  { params }: { params: { productId: string } }
+  // FIX: Type 'params' as a Promise
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
-    const { productId } = await params; // Await params for Next.js 15+
+    const { productId } = await params; // Await it correctly
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
-      include: { category: true } // Include category to pre-fill that field
+      include: { category: true }
     });
 
     return NextResponse.json(product);
@@ -21,17 +22,17 @@ export async function GET(
   }
 }
 
-// 2. PATCH - Update the product
+// 2. PATCH
 export async function PATCH(
   req: Request,
-  { params }: { params: { productId: string } }
+  // FIX: Type 'params' as a Promise
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
-    const { productId } = await params;
+    const { productId } = await params; // Await it correctly
     const body = await req.json();
     const { name, price, description, image, category } = body;
 
-    // Handle slug update if name changes (optional, but good practice)
     const slug = name
       .toLowerCase()
       .trim()
@@ -63,13 +64,14 @@ export async function PATCH(
   }
 }
 
-// 3. DELETE - Remove the product (You already had this)
+// 3. DELETE
 export async function DELETE(
   req: Request,
-  { params }: { params: { productId: string } }
+  // FIX: Type 'params' as a Promise
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
-    const { productId } = await params;
+    const { productId } = await params; // Await it correctly
     const product = await prisma.product.delete({
       where: { id: productId }
     });
