@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { Trash, Loader2, CreditCard, Banknote } from "lucide-react";
 import toast from "react-hot-toast";
-import { useSearchParams, useRouter } from "next/navigation"; // Added useRouter
+import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios"; 
 
 function CartLoader() {
@@ -20,23 +20,23 @@ function CartLoader() {
 function CartContent() {
   const cart = useCart();
   const searchParams = useSearchParams();
-  const router = useRouter(); // To redirect manually
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   
-  // New State: Payment Method Selection
-  const [paymentMethod, setPaymentMethod] = useState("stripe"); // 'stripe' or 'cod'
+  const [paymentMethod, setPaymentMethod] = useState("cod"); 
+  
+  // 1. ADDED: Form State for the database
+  const [formData, setFormData] = useState({
+    address: "",
+    phone: ""
+  });
 
   useEffect(() => {
     setIsMounted(true);
-
     if (searchParams.get("success")) {
-      toast.success("Payment completed! Thank you for your order.");
+      toast.success("Payment completed!");
       cart.removeAll();
-    }
-
-    if (searchParams.get("canceled")) {
-      toast.error("Order canceled.");
     }
   }, [searchParams, cart]);
 
@@ -46,36 +46,37 @@ function CartContent() {
     return total + Number(item.price);
   }, 0);
 
-  const onRemove = (id: string) => {
-    cart.removeItem(id);
-    toast.error("Item removed.");
-  };
-
   const onCheckout = async () => {
-    setIsLoading(true);
-
-    // OPTION 1: CASH ON DELIVERY
-    if (paymentMethod === "cod") {
-      // In a real app, you would send this to your database via an API here.
-      // For now, we simulate success:
-      setTimeout(() => {
-        cart.removeAll();
-        toast.success("Order Placed Successfully! We will contact you soon.");
-        router.push("/"); // Send them back to home
-        setIsLoading(false);
-      }, 1000);
+    // 2. ADDED: Validation
+    if (paymentMethod === "cod" && (!formData.address || !formData.phone)) {
+      toast.error("Please provide address and phone number.");
       return;
     }
 
-    // OPTION 2: STRIPE (ONLINE PAYMENT)
+    setIsLoading(true);
+
     try {
-      const response = await axios.post('/api/checkout', {
-        productIds: cart.items.map((item) => item.id)
-      });
-      window.location = response.data.url;
+      if (paymentMethod === "cod") {
+        // 3. FIXED: Actually calling your API instead of a timeout
+        await axios.post('/api/orders', {
+          productIds: cart.items.map((item) => item.id),
+          address: formData.address,
+          phone: formData.phone
+        });
+
+        cart.removeAll();
+        toast.success("Order Placed! Check Admin Panel.");
+        router.push("/admin/orders"); // Redirect to see the result
+      } else {
+        // Stripe Logic
+        const response = await axios.post('/api/checkout', {
+          productIds: cart.items.map((item) => item.id)
+        });
+        window.location = response.data.url;
+      }
     } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong with checkout.");
+      toast.error("Something went wrong.");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -89,50 +90,33 @@ function CartContent() {
           <div className="lg:col-span-7">
             {cart.items.length === 0 && (
               <div className="text-center py-20 bg-stone-50 rounded-lg">
-                <p className="text-stone-500 text-lg">Your cart is currently empty.</p>
-                <Link href="/shop" className="mt-4 inline-block text-sm font-medium text-stone-900 underline underline-offset-4">
-                  Continue Shopping
-                </Link>
+                <p className="text-stone-500 text-lg">Your cart is empty.</p>
+                <Link href="/shop" className="underline font-medium">Continue Shopping</Link>
               </div>
             )}
 
-            <ul className="divide-y divide-stone-200 border-b border-t border-stone-200">
+            <ul className="divide-y divide-stone-200">
               {cart.items.map((item) => (
-                <li key={item.id} className="flex py-6 sm:py-10">
-                  <div className="flex-shrink-0">
-                    <div className="relative h-24 w-24 rounded-md overflow-hidden sm:h-32 sm:w-32 border border-stone-200">
-                      <Image
-                        src={item.image || (item as any).images?.[0] || '/placeholder.jpg'}
-                        alt={item.name}
-                        fill
-                        className="object-cover object-center"
-                      />
-                    </div>
+                <li key={item.id} className="flex py-6">
+                  <div className="relative h-24 w-24 rounded-md overflow-hidden border">
+                    <Image
+                      src={item.image || (item as any).images?.[0] || '/placeholder.jpg'}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                    />
                   </div>
 
-                  <div className="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
-                    <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
+                  <div className="ml-4 flex flex-1 flex-col justify-between">
+                    <div className="flex justify-between">
                       <div>
-                        <div className="flex justify-between">
-                          <h3 className="text-sm">
-                            <Link href={`/product/${item.id}`} className="font-medium text-stone-700 hover:text-stone-900">
-                              {item.name}
-                            </Link>
-                          </h3>
-                        </div>
+                        <h3 className="text-sm font-medium">{item.name}</h3>
                         <p className="mt-1 text-sm text-stone-500">{(item as any).category?.name || "Item"}</p>
-                        <p className="mt-1 text-sm font-medium text-stone-900">${item.price.toFixed(2)}</p>
+                        <p className="mt-1 text-sm font-bold">${item.price.toFixed(2)}</p>
                       </div>
-
-                      <div className="mt-4 sm:mt-0 sm:pr-9">
-                        <button
-                          onClick={() => onRemove(item.id)}
-                          className="absolute right-0 top-0 text-stone-400 hover:text-red-500 transition-colors"
-                        >
-                          <span className="sr-only">Remove</span>
-                          <Trash className="h-5 w-5" />
-                        </button>
-                      </div>
+                      <button onClick={() => cart.removeItem(item.id)} className="text-stone-400 hover:text-red-500">
+                        <Trash className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 </li>
@@ -140,33 +124,46 @@ function CartContent() {
             </ul>
           </div>
 
-          <section className="mt-16 rounded-lg bg-stone-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8">
-            <h2 className="text-lg font-medium text-stone-900">Order summary</h2>
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center justify-between border-t border-stone-200 pt-4">
-                <div className="text-base font-medium text-stone-900">Order total</div>
-                <div className="text-base font-medium text-stone-900">${total.toFixed(2)}</div>
-              </div>
+          <section className="mt-16 rounded-lg bg-stone-50 p-6 lg:col-span-5 lg:mt-0">
+            <h2 className="text-lg font-medium text-stone-900">Order Summary</h2>
+            
+            {/* 4. ADDED: Input Fields for COD */}
+            {paymentMethod === "cod" && (
+                <div className="mt-6 space-y-4 border-b border-stone-200 pb-6">
+                    <div>
+                        <label className="block text-xs font-bold uppercase text-stone-500">Phone</label>
+                        <input 
+                            type="text" 
+                            className="mt-1 w-full rounded-md border border-stone-300 p-2 text-sm"
+                            value={formData.phone}
+                            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold uppercase text-stone-500">Address</label>
+                        <textarea 
+                            className="mt-1 w-full rounded-md border border-stone-300 p-2 text-sm"
+                            rows={3}
+                            value={formData.address}
+                            onChange={(e) => setFormData({...formData, address: e.target.value})}
+                        />
+                    </div>
+                </div>
+            )}
+
+            <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-4">
+              <div className="text-base font-medium text-stone-900">Order total</div>
+              <div className="text-base font-bold text-stone-900">${total.toFixed(2)}</div>
             </div>
 
-            {/* PAYMENT METHOD SELECTION */}
             <div className="mt-6 space-y-3">
-               <p className="text-sm font-medium text-stone-900">Select Payment Method</p>
-               
-               <div 
-                 onClick={() => setPaymentMethod("stripe")}
-                 className={`flex items-center p-3 border rounded-md cursor-pointer transition-all ${paymentMethod === "stripe" ? "border-stone-900 bg-stone-100" : "border-stone-200"}`}
-               >
-                  <CreditCard className="h-5 w-5 mr-3 text-stone-700"/>
-                  <span className="text-sm text-stone-700">Online Payment (Cards)</span>
+               <div onClick={() => setPaymentMethod("stripe")} className={`flex items-center p-3 border rounded-md cursor-pointer ${paymentMethod === "stripe" ? "border-stone-900 bg-stone-100" : "border-stone-200"}`}>
+                  <CreditCard className="h-5 w-5 mr-3"/>
+                  <span className="text-sm">Online Payment</span>
                </div>
-
-               <div 
-                 onClick={() => setPaymentMethod("cod")}
-                 className={`flex items-center p-3 border rounded-md cursor-pointer transition-all ${paymentMethod === "cod" ? "border-stone-900 bg-stone-100" : "border-stone-200"}`}
-               >
-                  <Banknote className="h-5 w-5 mr-3 text-stone-700"/>
-                  <span className="text-sm text-stone-700">Cash on Delivery</span>
+               <div onClick={() => setPaymentMethod("cod")} className={`flex items-center p-3 border rounded-md cursor-pointer ${paymentMethod === "cod" ? "border-stone-900 bg-stone-100" : "border-stone-200"}`}>
+                  <Banknote className="h-5 w-5 mr-3"/>
+                  <span className="text-sm">Cash on Delivery</span>
                </div>
             </div>
 
@@ -174,14 +171,10 @@ function CartContent() {
               <button
                 onClick={onCheckout}
                 disabled={cart.items.length === 0 || isLoading}
-                className="w-full flex items-center justify-center rounded-md border border-transparent bg-stone-900 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full flex items-center justify-center rounded-md bg-stone-900 px-6 py-3 text-white hover:bg-stone-700 disabled:opacity-50"
               >
                 {isLoading ? <Loader2 className="animate-spin h-5 w-5" /> : (paymentMethod === "cod" ? "Place Order (COD)" : "Proceed to Payment")}
               </button>
-            </div>
-            
-            <div className="mt-6 text-center text-xs text-stone-500">
-              <p>Secure Payments • Free Returns</p>
             </div>
           </section>
         </div>

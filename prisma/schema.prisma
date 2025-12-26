@@ -27,18 +27,18 @@ model User {
 model Product {
   id          String   @id @default(uuid())
   name        String
-  slug        String   @unique // For SEO friendly URLs (e.g., /product/bengal-tote)
+  slug        String   @unique // For SEO friendly URLs
   description String
-  price       Decimal  @db.Decimal(10, 2) // Handles cents precisely
+  price       Decimal  @db.Decimal(10, 2)
   salePrice   Decimal? @db.Decimal(10, 2)
   
-  // Specific Jute Attributes for your Filters
+  // Specific Jute Attributes
   category    Category @relation(fields: [categoryId], references: [id])
   categoryId  String
   
-  weaveStyle  String?  // e.g., "Braided", "Macrame", "Herringbone"
-  color       String?  // e.g., "Natural", "Bleached", "Terracotta"
-  isExport    Boolean  @default(true) // Badge for "Export Quality"
+  weaveStyle  String?  // e.g., "Braided", "Macrame"
+  color       String?  // e.g., "Natural", "Bleached"
+  isExport    Boolean  @default(true)
   
   images      String[] // Array of image URLs from Cloudinary
   stock       Int      @default(0)
@@ -54,29 +54,36 @@ model Product {
 }
 
 model Category {
-  id          String    @id @default(uuid())
-  name        String    @unique // e.g., "Rugs", "Baskets"
-  slug        String    @unique
-  products    Product[]
+  id       String    @id @default(uuid())
+  name     String    @unique
+  slug     String    @unique
+  products Product[]
 }
 
 // 3. ORDERS (The Money)
 model Order {
   id              String      @id @default(uuid())
-  userId          String?     // Nullable for "Guest Checkout"
+  
+  // Link to User (Optional for Guest Checkout)
+  userId          String?     
   user            User?       @relation(fields: [userId], references: [id])
   
-  totalAmount     Decimal     @db.Decimal(10, 2)
+  // Core Order Data
+  isPaid          Boolean     @default(false)
   status          OrderStatus @default(PENDING)
-  isInternational Boolean     @default(false) // Triggers DHL logic if true
+  totalAmount     Decimal     @default(0) @db.Decimal(10, 2)
   
-  // Address stored as JSON to handle complex foreign address formats
-  shippingAddress Json        
+  // Customer Details (Snapshot at time of order)
+  phone           String      @default("")
+  address         String      @default("") // Kept simple as String for MVP
   
   createdAt       DateTime    @default(now())
-  items           OrderItem[]
+  updatedAt       DateTime    @updatedAt
+  
+  orderItems      OrderItem[] // Relation to items bought
 }
 
+// Linking table: Which Product is in Which Order
 model OrderItem {
   id        String  @id @default(uuid())
   orderId   String
@@ -85,28 +92,29 @@ model OrderItem {
   productId String
   product   Product @relation(fields: [productId], references: [id])
   
-  quantity  Int
-  price     Decimal @db.Decimal(10, 2) // Price at time of purchase
+  // Save price/qty here so history doesn't change if you change product price later
+  quantity  Int     @default(1)
+  price     Decimal @default(0) @db.Decimal(10, 2)
 }
 
-// 4. WHOLESALE (The B2B Leads from your design)
+// 4. WHOLESALE (B2B Leads)
 model WholesaleInquiry {
-  id             String   @id @default(uuid())
-  contactName    String
-  companyName    String
-  email          String
-  country        String
+  id              String   @id @default(uuid())
+  contactName     String
+  companyName     String
+  email           String
+  country         String
   productInterest String
-  estimatedQty   Int
-  message        String?
-  createdAt      DateTime @default(now())
-  status         String   @default("NEW") // NEW, CONTACTED, CLOSED
+  estimatedQty    Int
+  message         String?
+  createdAt       DateTime @default(now())
+  status          String   @default("NEW")
 }
 
 // 5. SOCIAL PROOF
 model Review {
   id        String   @id @default(uuid())
-  rating    Int      // 1-5 stars
+  rating    Int
   comment   String?
   userId    String
   user      User     @relation(fields: [userId], references: [id])
