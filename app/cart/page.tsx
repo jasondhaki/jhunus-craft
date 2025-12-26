@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
@@ -9,11 +9,21 @@ import toast from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 import axios from "axios"; 
 
-export default function CartPage() {
+// This acts as a loading skeleton while the URL parameters load
+function CartLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <Loader2 className="h-8 w-8 animate-spin text-stone-500" />
+    </div>
+  );
+}
+
+// We moved all your logic into this sub-component
+function CartContent() {
   const cart = useCart();
   const searchParams = useSearchParams();
-  const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -26,9 +36,10 @@ export default function CartPage() {
     if (searchParams.get("canceled")) {
       toast.error("Order canceled.");
     }
-  }, [searchParams, cart.removeAll]);
+  }, [searchParams, cart]);
 
-  if (!isMounted) return null;
+  // Prevent hydration mismatch
+  if (!isMounted) return <CartLoader />;
 
   const total = cart.items.reduce((total, item) => {
     return total + Number(item.price);
@@ -42,15 +53,12 @@ export default function CartPage() {
   const onCheckout = async () => {
     try {
       setIsLoading(true);
-      // This connects to the API route we made
       const response = await axios.post('/api/checkout', {
         productIds: cart.items.map((item) => item.id)
       });
-      
-      // This jumps to the Stripe Payment Page
       window.location = response.data.url;
     } catch (error) {
-      console.error(error); // Log error to console to see what happened
+      console.error(error);
       toast.error("Something went wrong with checkout.");
     } finally {
       setIsLoading(false);
@@ -63,7 +71,6 @@ export default function CartPage() {
         <h1 className="text-3xl font-serif font-bold text-stone-900">Shopping Cart</h1>
         
         <div className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
-          
           <div className="lg:col-span-7">
             {cart.items.length === 0 && (
               <div className="text-center py-20 bg-stone-50 rounded-lg">
@@ -120,7 +127,6 @@ export default function CartPage() {
 
           <section className="mt-16 rounded-lg bg-stone-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8">
             <h2 className="text-lg font-medium text-stone-900">Order summary</h2>
-
             <div className="mt-6 space-y-4">
               <div className="flex items-center justify-between border-t border-stone-200 pt-4">
                 <div className="text-base font-medium text-stone-900">Order total</div>
@@ -146,5 +152,14 @@ export default function CartPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// This is the main default export that wraps everything
+export default function CartPage() {
+  return (
+    <Suspense fallback={<CartLoader />}>
+      <CartContent />
+    </Suspense>
   );
 }
