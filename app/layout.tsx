@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { Toaster } from "react-hot-toast";
 import { ClerkProvider } from '@clerk/nextjs'; // <--- 1. Import Clerk
 
+
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
 

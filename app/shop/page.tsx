@@ -1,46 +1,36 @@
 import { prisma } from "@/lib/prisma";
-import ProductCard from "@/components/ProductCard";
-
-// Always fetch fresh data so new products appear instantly
-export const dynamic = "force-dynamic";
+import ProductCard from "@/components/ui/product-card";
 
 export default async function ShopPage() {
-  // 1. Fetch ALL products from the database
   const products = await prisma.product.findMany({
-    include: { category: true },
-    orderBy: { createdAt: 'desc' }, // Newest items first
+    orderBy: {
+      createdAt: 'desc'
+    }
   });
 
   return (
-    <div className="bg-white min-h-screen">
-      {/* Page Header */}
-      <div className="bg-stone-50 border-b border-stone-200">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-serif font-bold tracking-tight text-stone-900">
-            All Collections
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base text-stone-500">
-            Explore our complete range of handcrafted jute products. 
-            From the Sundarbans to your living room.
-          </p>
-        </div>
+    <div className="max-w-7xl mx-auto px-4 py-12">
+      <h1 className="text-4xl font-bold text-stone-900 mb-2">All Products</h1>
+      <p className="text-stone-600 mb-8">Handcrafted jute essentials for your home.</p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        {products.map((product) => (
+          <ProductCard 
+            key={product.id} 
+            data={{
+              ...product,
+              // THE FIX: Convert Decimal to a regular Javascript Number
+              price: product.price.toNumber() 
+            }} 
+          />
+        ))}
       </div>
 
-      {/* Product Grid */}
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              id={product.id}
-              name={product.name}
-              price={Number(product.price)}
-              image={product.images[0]}
-              category={product.category.name}
-            />
-          ))}
+      {products.length === 0 && (
+        <div className="text-center py-20">
+          <p className="text-stone-500">No products found. Check back later!</p>
         </div>
-      </div>
+      )}
     </div>
   );
 }

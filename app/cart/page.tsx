@@ -102,7 +102,7 @@ function CartContent() {
                   <div className="flex-shrink-0">
                     <div className="relative h-24 w-24 rounded-md overflow-hidden sm:h-32 sm:w-32 border border-stone-200">
                       <Image
-                        src={item.image.startsWith('http') ? item.image : '/placeholder.jpg'}
+                        src={item.image || (item as any).images?.[0] || '/placeholder.jpg'}
                         alt={item.name}
                         fill
                         className="object-cover object-center"
@@ -120,7 +120,7 @@ function CartContent() {
                             </Link>
                           </h3>
                         </div>
-                        <p className="mt-1 text-sm text-stone-500">{item.category}</p>
+                        <p className="mt-1 text-sm text-stone-500">{(item as any).category?.name || "Item"}</p>
                         <p className="mt-1 text-sm font-medium text-stone-900">${item.price.toFixed(2)}</p>
                       </div>
 
