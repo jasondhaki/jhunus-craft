@@ -4,12 +4,11 @@ import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
-import { Trash, Loader2 } from "lucide-react";
+import { Trash, Loader2, CreditCard, Banknote } from "lucide-react";
 import toast from "react-hot-toast";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation"; // Added useRouter
 import axios from "axios"; 
 
-// This acts as a loading skeleton while the URL parameters load
 function CartLoader() {
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
@@ -18,12 +17,15 @@ function CartLoader() {
   );
 }
 
-// We moved all your logic into this sub-component
 function CartContent() {
   const cart = useCart();
   const searchParams = useSearchParams();
+  const router = useRouter(); // To redirect manually
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  
+  // New State: Payment Method Selection
+  const [paymentMethod, setPaymentMethod] = useState("stripe"); // 'stripe' or 'cod'
 
   useEffect(() => {
     setIsMounted(true);
@@ -38,7 +40,6 @@ function CartContent() {
     }
   }, [searchParams, cart]);
 
-  // Prevent hydration mismatch
   if (!isMounted) return <CartLoader />;
 
   const total = cart.items.reduce((total, item) => {
@@ -51,8 +52,23 @@ function CartContent() {
   };
 
   const onCheckout = async () => {
+    setIsLoading(true);
+
+    // OPTION 1: CASH ON DELIVERY
+    if (paymentMethod === "cod") {
+      // In a real app, you would send this to your database via an API here.
+      // For now, we simulate success:
+      setTimeout(() => {
+        cart.removeAll();
+        toast.success("Order Placed Successfully! We will contact you soon.");
+        router.push("/"); // Send them back to home
+        setIsLoading(false);
+      }, 1000);
+      return;
+    }
+
+    // OPTION 2: STRIPE (ONLINE PAYMENT)
     try {
-      setIsLoading(true);
       const response = await axios.post('/api/checkout', {
         productIds: cart.items.map((item) => item.id)
       });
@@ -60,7 +76,6 @@ function CartContent() {
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong with checkout.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -134,19 +149,39 @@ function CartContent() {
               </div>
             </div>
 
+            {/* PAYMENT METHOD SELECTION */}
+            <div className="mt-6 space-y-3">
+               <p className="text-sm font-medium text-stone-900">Select Payment Method</p>
+               
+               <div 
+                 onClick={() => setPaymentMethod("stripe")}
+                 className={`flex items-center p-3 border rounded-md cursor-pointer transition-all ${paymentMethod === "stripe" ? "border-stone-900 bg-stone-100" : "border-stone-200"}`}
+               >
+                  <CreditCard className="h-5 w-5 mr-3 text-stone-700"/>
+                  <span className="text-sm text-stone-700">Online Payment (Cards)</span>
+               </div>
+
+               <div 
+                 onClick={() => setPaymentMethod("cod")}
+                 className={`flex items-center p-3 border rounded-md cursor-pointer transition-all ${paymentMethod === "cod" ? "border-stone-900 bg-stone-100" : "border-stone-200"}`}
+               >
+                  <Banknote className="h-5 w-5 mr-3 text-stone-700"/>
+                  <span className="text-sm text-stone-700">Cash on Delivery</span>
+               </div>
+            </div>
+
             <div className="mt-6">
               <button
                 onClick={onCheckout}
                 disabled={cart.items.length === 0 || isLoading}
                 className="w-full flex items-center justify-center rounded-md border border-transparent bg-stone-900 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                {isLoading ? <Loader2 className="animate-spin h-5 w-5" /> : "Checkout"}
+                {isLoading ? <Loader2 className="animate-spin h-5 w-5" /> : (paymentMethod === "cod" ? "Place Order (COD)" : "Proceed to Payment")}
               </button>
             </div>
             
             <div className="mt-6 text-center text-xs text-stone-500">
-              <p>Secure Checkout powered by Stripe</p>
-              <p className="mt-1">Free shipping on international orders over $500</p>
+              <p>Secure Payments • Free Returns</p>
             </div>
           </section>
         </div>
@@ -155,7 +190,6 @@ function CartContent() {
   );
 }
 
-// This is the main default export that wraps everything
 export default function CartPage() {
   return (
     <Suspense fallback={<CartLoader />}>
