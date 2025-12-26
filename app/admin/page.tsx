@@ -9,6 +9,8 @@ import {
   AlertTriangle,
   Loader2 
 } from "lucide-react";
+// 1. New Imports for the Graph
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AdminDashboard() {
   const [data, setData] = useState<any>(null);
@@ -20,7 +22,11 @@ export default function AdminDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto h-8 w-8 text-stone-500" /></div>;
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <Loader2 className="h-10 w-10 animate-spin text-stone-500" />
+    </div>
+  );
 
   const stats = [
     {
@@ -55,39 +61,69 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8 text-stone-900">Business Overview</h1>
+      <h1 className="text-3xl font-bold mb-8 text-stone-900 font-serif">Business Overview</h1>
 
       {/* STAT CARDS GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+          <div key={idx} className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm transition-all hover:shadow-md">
             <div className="flex items-center justify-between mb-4">
               <div className={`p-2 rounded-lg ${stat.bg}`}>
                 <stat.icon className={`h-6 w-6 ${stat.color}`} />
               </div>
             </div>
             <div>
-              <p className="text-sm font-medium text-stone-500">{stat.label}</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-500">{stat.label}</p>
               <h3 className="text-2xl font-bold text-stone-900">{stat.value}</h3>
             </div>
           </div>
         ))}
       </div>
 
+      {/* 2. REVENUE GRAPH SECTION */}
+      <div className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm mb-8">
+        <h2 className="text-lg font-bold mb-6 text-stone-900">Revenue Performance</h2>
+        <div className="h-[350px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data?.graphData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f5" />
+              <XAxis 
+                dataKey="name" 
+                stroke="#a8a29e" 
+                fontSize={12} 
+                tickLine={false} 
+                axisLine={false} 
+                dy={10}
+              />
+              <YAxis 
+                stroke="#a8a29e" 
+                fontSize={12} 
+                tickLine={false} 
+                axisLine={false} 
+                tickFormatter={(value) => `$${value}`}
+              />
+              <Tooltip 
+                cursor={{fill: '#f5f5f5'}}
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+              />
+              <Bar dataKey="total" fill="#1c1917" radius={[4, 4, 0, 0]} barSize={40} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       {/* STOCK WATCHLIST */}
       <div className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm">
         <h2 className="text-lg font-bold mb-4 text-stone-900">Inventory Health</h2>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {data?.products.map((product: any, idx: number) => (
-            <div key={idx} className="flex items-center justify-between border-b border-stone-50 pb-4 last:border-0">
+            <div key={idx} className="flex items-center justify-between p-4 rounded-lg bg-stone-50/50 border border-stone-100">
               <span className="text-sm font-medium text-stone-700">{product.name}</span>
-              <div className="flex items-center gap-4">
-                <span className={`text-xs font-bold px-2 py-1 rounded ${
-                  product.stock < 5 ? "bg-red-100 text-red-700" : "bg-stone-100 text-stone-600"
-                }`}>
-                  {product.stock} in stock
-                </span>
-              </div>
+              <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                product.stock < 5 ? "bg-red-100 text-red-700" : "bg-stone-200 text-stone-600"
+              }`}>
+                {product.stock} in stock
+              </span>
             </div>
           ))}
         </div>
