@@ -1,0 +1,124 @@
+// THIS IS THE FULL FILE. COPY ALL OF IT.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. USERS (Customers & You)
+model User {
+  id        String   @id @default(uuid())
+  clerkId   String   @unique // Matches the ID from Clerk Authentication
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  orders    Order[]
+  reviews   Review[]
+}
+
+// 2. PRODUCTS (The Jute Goods)
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique // For SEO friendly URLs (e.g., /product/bengal-tote)
+  description String
+  price       Decimal  @db.Decimal(10, 2) // Handles cents precisely
+  salePrice   Decimal? @db.Decimal(10, 2)
+  
+  // Specific Jute Attributes for your Filters
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  
+  weaveStyle  String?  // e.g., "Braided", "Macrame", "Herringbone"
+  color       String?  // e.g., "Natural", "Bleached", "Terracotta"
+  isExport    Boolean  @default(true) // Badge for "Export Quality"
+  
+  images      String[] // Array of image URLs from Cloudinary
+  stock       Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  orderItems  OrderItem[]
+  reviews     Review[]
+
+  @@index([categoryId])
+  @@index([weaveStyle])
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique // e.g., "Rugs", "Baskets"
+  slug        String    @unique
+  products    Product[]
+}
+
+// 3. ORDERS (The Money)
+model Order {
+  id              String      @id @default(uuid())
+  userId          String?     // Nullable for "Guest Checkout"
+  user            User?       @relation(fields: [userId], references: [id])
+  
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  status          OrderStatus @default(PENDING)
+  isInternational Boolean     @default(false) // Triggers DHL logic if true
+  
+  // Address stored as JSON to handle complex foreign address formats
+  shippingAddress Json        
+  
+  createdAt       DateTime    @default(now())
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2) // Price at time of purchase
+}
+
+// 4. WHOLESALE (The B2B Leads from your design)
+model WholesaleInquiry {
+  id             String   @id @default(uuid())
+  contactName    String
+  companyName    String
+  email          String
+  country        String
+  productInterest String
+  estimatedQty   Int
+  message        String?
+  createdAt      DateTime @default(now())
+  status         String   @default("NEW") // NEW, CONTACTED, CLOSED
+}
+
+// 5. SOCIAL PROOF
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int      // 1-5 stars
+  comment   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
