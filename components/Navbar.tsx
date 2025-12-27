@@ -66,6 +66,9 @@ export default function Navbar() {
             <Link href="/sustainability" className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors">
               Sustainability
             </Link>
+            <Link href="/contact" className="text-sm font-medium text-stone-700 hover:text-[#a37a5c] transition-colors">
+              Contact Us
+            </Link>
             <Link href="/admin/products" className="text-sm font-bold text-red-600 hover:text-red-700 transition-colors">
               Admin Panel
             </Link>

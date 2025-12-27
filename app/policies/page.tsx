@@ -31,7 +31,7 @@ export default function PolicyPage() {
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-stone-800 mb-4">Wholesale Terms</h2>
           <p className="text-stone-600 leading-relaxed">
-            Business inquiries made through our <a href="/wholesale" className="text-stone-900 underline font-bold">Wholesale Portal</a> 
+            Business inquiries made through our <a href="/wholesale" className="text-stone-900 font-bold">Wholesale Portal </a> 
             require a 50% deposit before production begins for bulk quantities.
           </p>
         </section>
