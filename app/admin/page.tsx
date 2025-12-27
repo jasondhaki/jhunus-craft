@@ -7,9 +7,10 @@ import {
   Package, 
   ShoppingCart, 
   AlertTriangle,
-  Loader2 
+  Loader2,
+  Building2,
+  Mail
 } from "lucide-react";
-// 1. New Imports for the Graph
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AdminDashboard() {
@@ -80,7 +81,7 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* 2. REVENUE GRAPH SECTION */}
+      {/* REVENUE GRAPH SECTION */}
       <div className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm mb-8">
         <h2 className="text-lg font-bold mb-6 text-stone-900">Revenue Performance</h2>
         <div className="h-[350px] w-full">
@@ -112,20 +113,55 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* STOCK WATCHLIST */}
-      <div className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg font-bold mb-4 text-stone-900">Inventory Health</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {data?.products.map((product: any, idx: number) => (
-            <div key={idx} className="flex items-center justify-between p-4 rounded-lg bg-stone-50/50 border border-stone-100">
-              <span className="text-sm font-medium text-stone-700">{product.name}</span>
-              <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                product.stock < 5 ? "bg-red-100 text-red-700" : "bg-stone-200 text-stone-600"
-              }`}>
-                {product.stock} in stock
-              </span>
-            </div>
-          ))}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* INVENTORY WATCHLIST */}
+        <div className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-bold mb-4 text-stone-900">Inventory Health</h2>
+          <div className="space-y-3">
+            {data?.products.map((product: any, idx: number) => (
+              <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-stone-50/50 border border-stone-100">
+                <span className="text-sm font-medium text-stone-700">{product.name}</span>
+                <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                  product.stock < 5 ? "bg-red-100 text-red-700" : "bg-stone-200 text-stone-600"
+                }`}>
+                  {product.stock} left
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RECENT WHOLESALE LEADS */}
+        <div className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-stone-900">Recent Wholesale Leads</h2>
+            <Building2 className="h-5 w-5 text-stone-400" />
+          </div>
+          <div className="space-y-3">
+            {data?.recentInquiries.length > 0 ? (
+              data.recentInquiries.map((inquiry: any) => (
+                <div key={inquiry.id} className="p-4 rounded-lg border border-stone-100 bg-stone-50/30">
+                  <div className="flex justify-between items-start mb-1">
+                    <p className="text-sm font-bold text-stone-900">{inquiry.companyName}</p>
+                    <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
+                      Qty: {inquiry.estimatedQty}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-xs text-stone-500 gap-2">
+                    <Mail className="h-3 w-3" />
+                    <span>{inquiry.email}</span>
+                  </div>
+                  <p className="mt-2 text-[10px] text-stone-400 uppercase font-bold tracking-tight">
+                    Interest: {inquiry.productInterest}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-10 border-2 border-dashed border-stone-100 rounded-xl">
+                <p className="text-sm text-stone-400">No wholesale inquiries yet.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

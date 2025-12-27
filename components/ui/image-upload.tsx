@@ -29,31 +29,42 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   }
 
   const onUpload = (result: any) => {
+    // secure_url ensures the image is served over HTTPS
     onChange(result.info.secure_url);
   };
 
   return (
     <div>
-      <div className="mb-4 flex items-center gap-4">
+      <div className="mb-4 flex flex-wrap items-center gap-4">
         {value.map((url) => (
-          <div key={url} className="relative w-[200px] h-[200px] rounded-md overflow-hidden">
+          <div key={url} className="relative w-[200px] h-[200px] rounded-lg overflow-hidden border border-stone-200 shadow-sm">
             <div className="z-10 absolute top-2 right-2">
               <button
                 type="button"
                 onClick={() => onRemove(url)}
-                className="bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                className="bg-red-500 text-white p-1.5 rounded-md hover:bg-red-600 transition shadow-md"
               >
                 <Trash className="h-4 w-4" />
               </button>
             </div>
-            <Image fill className="object-cover" alt="Image" src={url} />
+            <Image 
+              fill 
+              className="object-cover transition-transform hover:scale-105 duration-300" 
+              alt="Product preview" 
+              src={url} 
+            />
           </div>
         ))}
       </div>
       
       <CldUploadWidget 
-        onSuccess={onUpload} 
-        uploadPreset="jhunus_craft" // <--- Correct name used here
+        onSuccess={onUpload} // For newer versions
+        onUpload={onUpload}  // Fallback for older versions
+        uploadPreset="jhunus_craft" 
+        options={{
+          maxFiles: 5,
+          clientAllowedFormats: ["webp", "png", "jpg", "jpeg"],
+        }}
       >
         {({ open }) => {
           const onClick = () => {
@@ -65,14 +76,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               type="button"
               disabled={disabled}
               onClick={onClick}
-              className="flex items-center gap-2 bg-stone-200 text-stone-800 px-4 py-2 rounded-md hover:bg-stone-300 transition"
+              className="flex items-center gap-2 bg-stone-100 text-stone-700 px-4 py-3 rounded-lg border-2 border-dashed border-stone-300 hover:border-stone-900 hover:text-stone-900 transition-all disabled:opacity-50"
             >
-              <ImagePlus className="h-4 w-4" />
-              Upload an Image
+              <ImagePlus className="h-5 w-5" />
+              <span className="text-sm font-semibold">Add Product Images</span>
             </button>
           );
         }}
       </CldUploadWidget>
+      <p className="mt-2 text-[10px] text-stone-400 uppercase font-bold tracking-widest">
+        Recommended: Square WebP or JPG (1000x1000px)
+      </p>
     </div>
   );
 };

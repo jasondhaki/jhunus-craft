@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resend } from "@/lib/resend"; // Correctly imported
 
-// POST /api/orders
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -20,9 +20,7 @@ export async function POST(req: Request) {
 
     // 2. Calculate Total (Server-side calculation)
     const totalAmount = productIds.reduce((sum: number, id: string) => {
-      // 👇 THIS WAS THE MISSING LINE 👇
       const product = products.find((p) => p.id === id);
-      // 👆 YOU NEED TO FIND IT BEFORE YOU CAN USE IT 👆
       return sum + (product ? Number(product.price) : 0);
     }, 0);
 
@@ -43,6 +41,35 @@ export async function POST(req: Request) {
         }
       }
     });
+
+    // 4. TRIGGER EMAIL NOTIFICATION
+    // We send this to YOU so you know a sale happened
+    try {
+      await resend.emails.send({
+        from: "Jhunu's Craft <onboarding@resend.dev>",
+        to: "your-email@gmail.com", // 👈 REPLACE with your real email
+        subject: `🛍️ New Order: $${totalAmount.toFixed(2)}`,
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; border: 1px solid #e5e5e5; border-radius: 10px;">
+            <h2 style="color: #1c1917;">New Order Alert!</h2>
+            <p>A new order has been placed on <strong>Jhunu's Craft</strong>.</p>
+            <hr style="border: 0; border-top: 1px solid #eee;" />
+            <p><strong>Total Amount:</strong> $${totalAmount.toFixed(2)}</p>
+            <p><strong>Customer Phone:</strong> ${phone}</p>
+            <p><strong>Delivery Address:</strong> ${address}</p>
+            <div style="margin-top: 20px;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/orders" 
+                 style="background-color: #1c1917; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 14px;">
+                 View in Admin Panel
+              </a>
+            </div>
+          </div>
+        `
+      });
+    } catch (emailError) {
+      // We log the email error but don't stop the order success response
+      console.log("[ORDER_EMAIL_ERROR]", emailError);
+    }
 
     return NextResponse.json(order);
   } catch (error) {
