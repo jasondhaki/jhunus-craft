@@ -51,7 +51,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               fill 
               className="object-cover transition-transform hover:scale-105 duration-300" 
               alt="Product preview" 
-              src={url} 
+              src={url.replace('/upload/', '/upload/f_auto,q_auto,w_800/') }
             />
           </div>
         ))}

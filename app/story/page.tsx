@@ -6,7 +6,7 @@ export default function OurStoryPage() {
       {/* 1. HERO SECTION - Use story-hero.jpg */}
       <div className="relative h-[60vh] w-full">
         <Image 
-          src="https://res.cloudinary.com/dh6pbkd80/image/upload/v1766827952/story-hero_zrn6nu.png" 
+          src="https://res.cloudinary.com/dh6pbkd80/image/upload/f_auto,q_auto/v1766827952/story-hero_zrn6nu.png" 
           alt="Weaving Tradition"
           fill
           priority // Added for optimization: loads this "above fold" image first
@@ -36,7 +36,7 @@ export default function OurStoryPage() {
           </div>
           <div className="relative h-[450px] rounded-2xl overflow-hidden shadow-2xl">
             <Image 
-              src="https://res.cloudinary.com/dh6pbkd80/image/upload/v1766827952/founder-team_bazdnk.png" 
+              src="https://res.cloudinary.com/dh6pbkd80/image/upload/f_auto,q_auto/v1766827952/founder-team_bazdnk.png" 
               alt="Founder, Jhunu and her team"
               fill
               className="object-cover transition-transform duration-700 hover:scale-105"
@@ -52,9 +52,9 @@ export default function OurStoryPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {[
-            { name: "Wooten Weaver", role: "Master Artisan", img: "https://res.cloudinary.com/dh6pbkd80/image/upload/v1766827952/artisan1_bznixk.png" },
-            { name: "Wahis Weaver", role: "Design Lead", img: "https://res.cloudinary.com/dh6pbkd80/image/upload/v1766827951/artisan2_iaods4.png" },
-            { name: "Sheunai Weaver", role: "Quality Specialist", img: "https://res.cloudinary.com/dh6pbkd80/image/upload/v1766827951/artisan3_sdfdyy.png" }
+            { name: "Wooten Weaver", role: "Master Artisan", img: "https://res.cloudinary.com/dh6pbkd80/image/upload/f_auto,q_auto/v1766827952/artisan1_bznixk.png" },
+            { name: "Wahis Weaver", role: "Design Lead", img: "https://res.cloudinary.com/dh6pbkd80/image/upload/f_auto,q_auto/v1766827951/artisan2_iaods4.png" },
+            { name: "Sheunai Weaver", role: "Quality Specialist", img: "https://res.cloudinary.com/dh6pbkd80/image/upload/f_auto,q_auto/v1766827951/artisan3_sdfdyy.png" }
           ].map((artisan, i) => (
             <div key={i} className="text-center group bg-white p-6 rounded-2xl shadow-sm border border-stone-100 hover:shadow-md transition">
               <div className="relative w-full aspect-square rounded-xl overflow-hidden mb-6 border-4 border-stone-50">
@@ -85,7 +85,7 @@ export default function OurStoryPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden shadow-lg border-2 border-white/20">
                 <Image 
-                   src="https://res.cloudinary.com/dh6pbkd80/image/upload/v1766827951/our-story-sustainable-img1_ydeujk.png" 
+                   src="https://res.cloudinary.com/dh6pbkd80/image/upload/f_auto,q_auto/v1766827951/our-story-sustainable-img1_ydeujk.png" 
                    alt="Eco-friendly raw jute fibers" 
                    fill 
                    className="object-cover hover:scale-110 transition duration-500"
@@ -93,7 +93,7 @@ export default function OurStoryPage() {
               </div>
               <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden shadow-lg border-2 border-white/20">
                 <Image 
-                   src="https://res.cloudinary.com/dh6pbkd80/image/upload/v1766827951/our-story-sustainable-img2_sc2ssf.png" 
+                   src="https://res.cloudinary.com/dh6pbkd80/image/upload/f_auto,q_auto/v1766827951/our-story-sustainable-img2_sc2ssf.png" 
                    alt="Artisan working on a traditional loom" 
                    fill 
                    className="object-cover hover:scale-110 transition duration-500"
