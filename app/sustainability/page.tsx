@@ -135,7 +135,7 @@ export default function SustainabilityPage() {
               </a>
               
               <p className="mt-6 text-xs text-stone-500 uppercase tracking-widest">
-                PDF Format • 2.4 MB • Updated Dec 2024
+                PDF Format • 67 KB • Updated Dec 2025
               </p>
             </div>
           </div>
