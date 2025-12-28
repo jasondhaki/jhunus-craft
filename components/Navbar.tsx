@@ -70,12 +70,12 @@ export default function Navbar() {
               Sustainability
             </Link>
             <Link href="/contact" className="text-sm font-medium text-stone-600 hover:text-[#a37a5c] transition-colors">
-              Contact
+              Contact Us
             </Link>
             {/* Admin Link - kept distinct */}
-            <Link href="/admin/products" className="text-xs font-bold uppercase tracking-wider text-red-600 hover:text-red-700 hover:underline underline-offset-4 transition-all">
+            {/**<Link href="/admin/products" className="text-xs font-bold uppercase tracking-wider text-red-600 hover:text-red-700 hover:underline underline-offset-4 transition-all">
               Admin
-            </Link>
+            </Link>*/}
           </div>
 
           {/* 5. Icons Section (Cart, User, Search) */}
@@ -155,7 +155,8 @@ export default function Navbar() {
             >
               Contact Us
             </Link>
-            <div className="border-t border-stone-200 my-2 pt-2">
+
+            {/**<div className="border-t border-stone-200 my-2 pt-2">
               <Link 
                 href="/admin/products" 
                 onClick={() => setIsMenuOpen(false)}
@@ -163,7 +164,7 @@ export default function Navbar() {
               >
                 Admin Panel
               </Link>
-            </div>
+            </div>**/}
           </div>
         </div>
       )}
