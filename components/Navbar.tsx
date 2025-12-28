@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image"; 
-import { Search, ShoppingCart, Menu, X, User } from "lucide-react"; 
+import { ShoppingCart, Menu, X, User } from "lucide-react"; 
 import { useCart } from "@/hooks/use-cart";
 import { useEffect, useState } from "react";
 import { UserButton, SignInButton, useUser } from "@clerk/nextjs";
+import SearchBar from "@/components/SearchBar"; // <--- THE KEY IMPORT
 
 export default function Navbar() {
   const cart = useCart();
@@ -24,15 +25,15 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-stone-200 bg-stone-50/95 backdrop-blur-md">
       
-      {/* 1. Top Bar - Hides on tiny phones to save space, shows on larger screens */}
+      {/* 1. Top Bar */}
       <div className="bg-stone-900 text-stone-50 text-[10px] sm:text-xs py-1.5 px-4 text-center tracking-wide">
         Global Shipping Available | 100% Biodegradable Jute
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-16 items-center justify-between gap-4">
           
-          {/* 2. Mobile Menu Trigger (Visible only on Mobile/Tablet) */}
+          {/* 2. Mobile Menu Trigger */}
           <div className="flex md:hidden">
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -43,7 +44,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* 3. Logo - Centered on Mobile, Left on Desktop */}
+          {/* 3. Logo */}
           <div className="flex-shrink-0 flex items-center justify-center md:justify-start w-full md:w-auto absolute md:relative left-0 right-0 pointer-events-none md:pointer-events-auto">
             <Link href="/" className="pointer-events-auto">
               <Image 
@@ -57,9 +58,8 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* 4. Desktop Navigation - Hidden on Mobile, Flex on Tablet+ */}
-          {/* Gaps: md:gap-6 (Tablet), lg:gap-8 (Laptop) */}
-          <div className="hidden md:flex md:items-center md:gap-6 lg:gap-10">
+          {/* 4. Desktop Navigation */}
+          <div className="hidden md:flex md:items-center md:gap-6 lg:gap-8">
             <Link href="/shop" className="text-sm font-medium text-stone-600 hover:text-[#a37a5c] transition-colors">
               Shop
             </Link>
@@ -72,19 +72,16 @@ export default function Navbar() {
             <Link href="/contact" className="text-sm font-medium text-stone-600 hover:text-[#a37a5c] transition-colors">
               Contact Us
             </Link>
-            {/* Admin Link - kept distinct */}
-            {/**<Link href="/admin/products" className="text-xs font-bold uppercase tracking-wider text-red-600 hover:text-red-700 hover:underline underline-offset-4 transition-all">
-              Admin
-            </Link>*/}
           </div>
 
-          {/* 5. Icons Section (Cart, User, Search) */}
+          {/* 5. Right Section: Search, User, Cart */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             
-            {/* Desktop Search */}
-            <button className="text-stone-500 hover:text-[#a37a5c] transition-colors hidden sm:block p-2">
-              <Search className="h-5 w-5" />
-            </button>
+            {/* DESKTOP SEARCH (Hidden on mobile) */}
+            <div className="hidden sm:block">
+               {/* This replaces the old <button><Search /></button> */}
+               <SearchBar isMobile={false} />
+            </div>
             
             {/* User Auth */}
             <div className="flex items-center">
@@ -112,19 +109,15 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 6. Optimized Mobile Menu Dropdown */}
+      {/* 6. Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden border-t border-stone-200 bg-stone-50 animate-in slide-in-from-top-2 duration-200">
           <div className="space-y-1 px-4 pb-6 pt-3">
             
-            {/* Mobile Search Bar (Since the icon is hidden on tiny screens) */}
-            <div className="relative mb-4 mt-2">
-               <input 
-                 type="text" 
-                 placeholder="Search products..." 
-                 className="w-full bg-stone-100 border border-stone-200 rounded-lg py-2 px-4 text-sm focus:outline-none focus:ring-1 focus:ring-[#a37a5c]"
-               />
-               <Search className="absolute right-3 top-2.5 h-4 w-4 text-stone-400" />
+            {/* MOBILE SEARCH BAR (Visible only in menu) */}
+            <div className="mb-4 mt-2">
+               {/* This replaces the manual <input> code */}
+               <SearchBar isMobile={true} />
             </div>
 
             <Link 
@@ -156,7 +149,8 @@ export default function Navbar() {
               Contact Us
             </Link>
 
-            {/**<div className="border-t border-stone-200 my-2 pt-2">
+            {/* Admin Link (Commented out per your previous code) */}
+            {/* <div className="border-t border-stone-200 my-2 pt-2">
               <Link 
                 href="/admin/products" 
                 onClick={() => setIsMenuOpen(false)}
@@ -164,7 +158,7 @@ export default function Navbar() {
               >
                 Admin Panel
               </Link>
-            </div>**/}
+            </div> */}
           </div>
         </div>
       )}
