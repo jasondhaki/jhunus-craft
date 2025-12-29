@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image"; 
-import { ShoppingCart, Menu, X, User } from "lucide-react"; 
+import { ShoppingCart, Menu, X, User, ChevronDown } from "lucide-react"; 
 import { useCart } from "@/hooks/use-cart";
 import { useEffect, useState } from "react";
 import { UserButton, SignInButton, useUser } from "@clerk/nextjs";
-import SearchBar from "@/components/SearchBar"; // <--- THE KEY IMPORT
+import SearchBar from "@/components/SearchBar"; 
 
 export default function Navbar() {
   const cart = useCart();
@@ -60,14 +60,43 @@ export default function Navbar() {
 
           {/* 4. Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:gap-6 lg:gap-8">
+            {/* NEW HOME LINK */}
+            <Link href="/" className="text-sm font-medium text-stone-600 hover:text-[#a37a5c] transition-colors">
+              Home
+            </Link>
+
             <Link href="/shop" className="text-sm font-medium text-stone-600 hover:text-[#a37a5c] transition-colors">
               Shop
             </Link>
-            <Link href="/story" className="text-sm font-medium text-stone-600 hover:text-[#a37a5c] transition-colors">
-              Our Story
-            </Link>
-            <Link href="/sustainability" className="text-sm font-medium text-stone-600 hover:text-[#a37a5c] transition-colors">
-              Sustainability
+
+            {/* DROPDOWN: ABOUT */}
+            <div className="relative group h-16 flex items-center">
+              <button className="flex items-center gap-1 text-sm font-medium text-stone-600 group-hover:text-[#a37a5c] transition-colors focus:outline-none">
+                About
+                <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+              </button>
+              
+              {/* Dropdown Menu */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 w-48 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out">
+                <div className="bg-white rounded-lg shadow-xl border border-stone-100 overflow-hidden py-1">
+                  <Link 
+                    href="/story" 
+                    className="block px-4 py-3 text-sm text-stone-600 hover:bg-stone-50 hover:text-[#a37a5c] transition-colors"
+                  >
+                    Our Story
+                  </Link>
+                  <Link 
+                    href="/sustainability" 
+                    className="block px-4 py-3 text-sm text-stone-600 hover:bg-stone-50 hover:text-[#a37a5c] transition-colors border-t border-stone-50"
+                  >
+                    Sustainability
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <Link href="/payment-terms" className="text-sm font-medium text-stone-600 hover:text-[#a37a5c] transition-colors">
+              Wholesale
             </Link>
             <Link href="/contact" className="text-sm font-medium text-stone-600 hover:text-[#a37a5c] transition-colors">
               Contact Us
@@ -77,13 +106,10 @@ export default function Navbar() {
           {/* 5. Right Section: Search, User, Cart */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             
-            {/* DESKTOP SEARCH (Hidden on mobile) */}
             <div className="hidden sm:block">
-               {/* This replaces the old <button><Search /></button> */}
                <SearchBar isMobile={false} />
             </div>
             
-            {/* User Auth */}
             <div className="flex items-center">
               {isSignedIn ? (
                 <UserButton afterSignOutUrl="/" />
@@ -96,7 +122,6 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Cart */}
             <Link href="/cart" className="group flex items-center p-2 relative">
               <ShoppingCart className="h-5 w-5 text-stone-500 group-hover:text-[#a37a5c] transition-colors" />
               {cart.items.length > 0 && (
@@ -114,11 +139,18 @@ export default function Navbar() {
         <div className="md:hidden border-t border-stone-200 bg-stone-50 animate-in slide-in-from-top-2 duration-200">
           <div className="space-y-1 px-4 pb-6 pt-3">
             
-            {/* MOBILE SEARCH BAR (Visible only in menu) */}
             <div className="mb-4 mt-2">
-               {/* This replaces the manual <input> code */}
                <SearchBar isMobile={true} />
             </div>
+
+            {/* NEW MOBILE HOME LINK */}
+            <Link 
+              href="/" 
+              onClick={() => setIsMenuOpen(false)}
+              className="block rounded-lg px-3 py-2.5 text-base font-medium text-stone-700 hover:bg-stone-200 hover:text-[#a37a5c] transition-colors"
+            >
+              Home
+            </Link>
 
             <Link 
               href="/shop" 
@@ -127,6 +159,7 @@ export default function Navbar() {
             >
               Shop Categories
             </Link>
+            
             <Link 
               href="/story" 
               onClick={() => setIsMenuOpen(false)}
@@ -141,6 +174,14 @@ export default function Navbar() {
             >
               Sustainability
             </Link>
+
+            <Link 
+              href="/payment-terms" 
+              onClick={() => setIsMenuOpen(false)}
+              className="block rounded-lg px-3 py-2.5 text-base font-medium text-stone-700 hover:bg-stone-200 hover:text-[#a37a5c] transition-colors"
+            >
+              Wholesale Info
+            </Link>
              <Link 
               href="/contact" 
               onClick={() => setIsMenuOpen(false)}
@@ -148,17 +189,6 @@ export default function Navbar() {
             >
               Contact Us
             </Link>
-
-            {/* Admin Link (Commented out per your previous code) */}
-            {/* <div className="border-t border-stone-200 my-2 pt-2">
-              <Link 
-                href="/admin/products" 
-                onClick={() => setIsMenuOpen(false)}
-                className="block rounded-lg px-3 py-2.5 text-base font-bold text-red-600 hover:bg-red-50 transition-colors"
-              >
-                Admin Panel
-              </Link>
-            </div> */}
           </div>
         </div>
       )}
